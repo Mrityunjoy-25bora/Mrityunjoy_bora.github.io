@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>My Resume & Biodata</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css">
+  <style>
+    @media print { .no-print { display: none !important; } }
+    .ai-float { animation: pulse 2s infinite; }
+    @keyframes pulse { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.1); } }
+  </style>
+</head>
+<body class="bg-gray-100 min-h-screen">
+
+<div class="max-w-6xl mx-auto">
+
+  <!-- Top Bar -->
+  <div class="no-print bg-indigo-600 text-white p-3 flex justify-between items-center">
+    <h1 class="font-bold">My Personal Resume Builder</h1>
+    <button onclick="toggleEdit()" class="bg-white text-indigo-600 px-5 py-2 rounded-lg font-medium">
+      <i class="fas fa-edit"></i> Edit Mode
+    </button>
+  </div>
+
+  <!-- Preview Area -->
+  <div id="preview" class="bg-white shadow-2xl min-h-screen"></div>
+</div>
+
+<!-- Floating AI Button -->
+<button onclick="toggleAI()" class="no-print ai-float fixed bottom-6 right-6 w-14 h-14 bg-gradient-to-br from-purple-600 to-indigo-600 text-white rounded-full shadow-2xl flex items-center justify-center text-2xl hover:scale-110 transition z-50">
+  <i class="fas fa-robot"></i>
+</button>
+
+<!-- Edit Panel -->
+<div id="editPanel" class="hidden fixed top-0 right-0 h-full w-96 bg-white shadow-2xl overflow-auto p-6 z-[90]">
+  <h2 class="text-2xl font-bold mb-6">Edit Your Information</h2>
+  
+  <div class="space-y-6">
+
+    <!-- Photos Upload -->
+    <div>
+      <label class="block text-sm font-medium mb-2">📸 Add Photos / Certificates / Projects</label>
+      <input type="file" id="galleryUpload" accept="image/*" multiple class="w-full text-sm border p-2 rounded-lg">
+      <p class="text-xs text-gray-500 mt-1">You can select multiple photos</p>
+    </div>
+
+    <!-- Basic Info -->
+    <input id="name" placeholder="Full Name" class="border p-3 rounded-lg w-full">
+    <input id="title" placeholder="Job Title / Designation" class="border p-3 rounded-lg w-full">
+    <input id="location" placeholder="Location" class="border p-3 rounded-lg w-full">
+    <input id="email" placeholder="Email" class="border p-3 rounded-lg w-full">
+    <input id="phone" placeholder="Phone" class="border p-3 rounded-lg w-full">
+    
+    <textarea id="summary" rows="4" placeholder="Professional Summary..." class="border p-3 w-full rounded-lg"></textarea>
+
+    <button onclick="saveData()" class="w-full bg-green-600 hover:bg-green-700 text-white py-4 rounded-xl font-bold">
+      💾 Save All Changes
+    </button>
+  </div>
+</div>
+
+<script>
+// Data
+let data = {
+  name: "", title: "", location: "", email: "", phone: "",
+  summary: "",
+  profilePic: "", bgPic: "",
+  gallery: []   // Array to store multiple photos
+};
+
+if (localStorage.getItem('myResumeData')) {
+  data = JSON.parse(localStorage.getItem('myResumeData'));
+}
+
+function renderPreview() {
+  const preview = document.getElementById('preview');
+  
+  let galleryHTML = '';
+  if (data.gallery && data.gallery.length > 0) {
+    galleryHTML = `
+      <div class="mt-12">
+        <h2 class="text-2xl font-bold text-gray-800 border-b pb-2 mb-6">Gallery</h2>
+        <div class="grid grid-cols-2 md:grid-cols-3 gap-4">
+          ${data.gallery.map(img => `
+            <img src="${img}" class="rounded-xl shadow-md w-full h-48 object-cover">
+          `).join('')}
+        </div>
+      </div>`;
+  }
+
+  preview.innerHTML = `
+    <div class="relative h-80 bg-cover bg-center" style="background-image: url('${data.bgPic || "https://picsum.photos/id/1015/2000/800"}')">
+      <div class="absolute inset-0 bg-gradient-to-b from-black/40 to-black/70"></div>
+      <div class="absolute bottom-8 left-8 flex items-end gap-6">
+        <img src="${data.profilePic || 'https://via.placeholder.com/150'}" class="w-32 h-32 rounded-2xl border-4 border-white object-cover shadow-xl">
+        <div class="text-white">
+          <h1 class="text-5xl font-bold">${data.name || "Your Name"}</h1>
+          <p class="text-2xl mt-1">${data.title || "Your Professional Title"}</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="p-8 max-w-5xl mx-auto">
+      <div class="grid md:grid-cols-12 gap-10">
+        <div class="md:col-span-4 space-y-8">
+          <h2 class="text-2xl font-bold text-gray-800 border-b pb-2">Biodata</h2>
+          <div class="space-y-3 text-sm">
+            <p><strong>Location:</strong> ${data.location || "---"}</p>
+            <p><strong>Email:</strong> ${data.email || "---"}</p>
+            <p><strong>Phone:</strong> ${data.phone || "---"}</p>
+          </div>
+        </div>
+        
+        <div class="md:col-span-8">
+          <h2 class="text-2xl font-bold text-gray-800 border-b pb-2">Professional Summary</h2>
+          <p class="mt-4 text-gray-700 leading-relaxed">${data.summary || "Click Edit Mode to add information..."}</p>
+        </div>
+      </div>
+      
+      ${galleryHTML}
+      
+      <div class="text-center mt-16 text-sm text-gray-500">
+        Personal Resume Website • Built with ❤️
+      </div>
+    </div>
+  `;
+}
+
+function saveData() {
+  data.name = document.getElementById('name').value;
+  data.title = document.getElementById('title').value;
+  data.location = document.getElementById('location').value;
+  data.email = document.getElementById('email').value;
+  data.phone = document.getElementById('phone').value;
+  data.summary = document.getElementById('summary').value;
+
+  localStorage.setItem('myResumeData', JSON.stringify(data));
+  renderPreview();
+  alert("✅ Saved Successfully!");
+}
+
+function toggleEdit() {
+  const panel = document.getElementById('editPanel');
+  panel.classList.toggle('hidden');
+  
+  document.getElementById('name').value = data.name;
+  document.getElementById('title').value = data.title;
+  document.getElementById('location').value = data.location;
+  document.getElementById('email').value = data.email;
+  document.getElementById('phone').value = data.phone;
+  document.getElementById('summary').value = data.summary;
+}
+
+// Multiple Photo Upload
+document.getElementById('galleryUpload').addEventListener('change', e => {
+  const files = e.target.files;
+  if (files.length === 0) return;
+
+  Array.from(files).forEach(file => {
+    const reader = new FileReader();
+    reader.onload = ev => {
+      data.gallery.push(ev.target.result);
+      saveData();
+    };
+    reader.readAsDataURL(file);
+  });
+});
+
+// AI Modal (same as before)
+function toggleAI() {
+  // ... (you can keep the previous AI modal code)
+  alert("📸 You can now upload multiple photos in Edit Mode!\n\nGo to Edit Mode → Scroll down to 'Add Photos'");
+}
+
+// Initial Load
+renderPreview();
+</script>
+
+</body>
+</html>
